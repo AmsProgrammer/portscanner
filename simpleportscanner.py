@@ -4,22 +4,38 @@ from socket import *
 import optparse
 from threading import *
 
-def conscan(tgtHost,tgtPorts):
+
+def main():
+    parser = optparse.OptionParser("Usage of prorgam: " + '-H <target host>  -p <target port> ')
+    parser.add_option('-H' ,dest='Thost' , type= 'string' , help = "enter target host here")
+    parser.add_option('-p',dest='Tport' , type = 'string' , help = "enter target port here")
+    (options , args) = parser.parse_args()
+    targethost = options.Thost
+    targetport = str(options.Tport).split(',')
+    if((targethost == None) | (targetport[0] == None)):
+        print(parser.usage)
+        exit(0)
+
+    Scanner(targethost,targetport)
+
+
+def sockscan(targethost,targetport):
     try:
-        sock = socket(AF_INET , SOCK_STREAM)
-        sock.connect((tgtHost,tgtPorts))
-        print(f"[+]{tgtPorts} tcp is open :)")
+        st = socket(AF_INET , SOCK_STREAM)
+        st.connect((targethost,targetport))
+        print(f"[+]{targetport} tcp is open :)")
     except:
-        print(f"[-]{tgtPorts} tcp is closed !!!")
+        print(f"[-]{targetport} tcp is closed !!!")
     finally:
-        sock.close()
+        st.close()
 
-def PortScanner(tgtHost,tgtPorts):
+
+def Scanner(targethost,targetport):
     try:
-        targetip = gethostbyname(tgtHost)
+        targetip = gethostbyname(targethost)
     except:
-        print("Unknown Host !!!")
-
+        print("cant find host with the specify text")
+        exit(0)
     try:
         targetname = gethostbyaddr(targetip)
         print("scan results for:" + targetname[0])
@@ -27,22 +43,9 @@ def PortScanner(tgtHost,tgtPorts):
         print("scan result for:" + targetip)
     setdefaulttimeout(1)
     
-    for tgtport in tgtPorts:
-        t = Thread(target=conscan,args=(tgtHost , int(tgtport)))
+    for tport in targetport:
+        t = Thread(target=sockscan,args=(targethost , int(tport)))
         t.start()
 
-
-def main():
-    parser = optparse.OptionParser("Usage of prorgam: " + '-H <target host>  -p <target port> ')
-    parser.add_option('-H' ,dest='tgthost' , type= 'string' , help = "specify target host")
-    parser.add_option('-p',dest='tgtports' , type = 'string' , help = "specify target ports seperated by comma")
-    (options , args) = parser.parse_args()
-    tgtHost = options.tgthost
-    tgtPorts = str(options.tgtports).split(',')
-    if((tgtHost == None) | (tgtPorts[0] == None)):
-        print(parser.usage)
-        exit(0)
-
-    PortScanner(tgtHost,tgtPorts)
 if(__name__ == '__main__'):
     main()
